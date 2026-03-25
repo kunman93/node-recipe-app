@@ -1,7 +1,7 @@
 hooks:
   post-run:
-    - name: Run custom linter
-      run: npm run lint -- --max-warnings 0
+    - name: Run tests
+      run: npm test
     - name: Check for TODO comments
       run: |
         if grep -r "TODO" src/; then
