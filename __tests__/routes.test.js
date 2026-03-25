@@ -1,11 +1,11 @@
-const request = require("supertest");
-const express = require("express");
-const routes = require("../src/routes");
-const { initializeTestDb } = require("./test-database");
+const request = require('supertest');
+const express = require('express');
+const routes = require('../src/routes');
+const { initializeTestDb } = require('./test-database');
 
 // Mock the database module to use test database
-jest.mock("../src/database", () => ({
-  getDbConnection: () => require("./test-database").getTestDbConnection(),
+jest.mock('../src/database', () => ({
+  getDbConnection: () => require('./test-database').getTestDbConnection(),
 }));
 
 // Simple app setup for testing
@@ -20,11 +20,11 @@ function createTestApp() {
     next();
   });
 
-  app.use("/", routes);
+  app.use('/', routes);
   return app;
 }
 
-describe("Routes", () => {
+describe('Routes', () => {
   let app;
   let db;
 
@@ -39,104 +39,104 @@ describe("Routes", () => {
     }
   });
 
-  test("GET / should return 200", async () => {
-    const response = await request(app).get("/");
+  test('GET / should return 200', async () => {
+    const response = await request(app).get('/');
     expect(response.status).toBe(200);
-    expect(response.body.view).toBe("home");
+    expect(response.body.view).toBe('home');
   });
 
-  test("GET /recipes should return all recipes", async () => {
+  test('GET /recipes should return all recipes', async () => {
     await db.run(
-      "INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)",
-      ["Pasta", "pasta, sauce", "boil and mix"],
+      'INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)',
+      ['Pasta', 'pasta, sauce', 'boil and mix'],
     );
     await db.run(
-      "INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)",
-      ["Salad", "lettuce, tomato", "mix together"],
+      'INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)',
+      ['Salad', 'lettuce, tomato', 'mix together'],
     );
 
-    const response = await request(app).get("/recipes");
+    const response = await request(app).get('/recipes');
     expect(response.status).toBe(200);
-    expect(response.body.view).toBe("recipes");
+    expect(response.body.view).toBe('recipes');
     expect(response.body.locals.recipes).toHaveLength(2);
   });
 
-  test("GET /recipes/:id should return a recipe when it exists", async () => {
+  test('GET /recipes/:id should return a recipe when it exists', async () => {
     await db.run(
-      "INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)",
-      ["Omelette", "eggs, butter", "whisk and fry"],
+      'INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)',
+      ['Omelette', 'eggs, butter', 'whisk and fry'],
     );
-    const created = await db.get("SELECT * FROM recipes WHERE title = ?", [
-      "Omelette",
+    const created = await db.get('SELECT * FROM recipes WHERE title = ?', [
+      'Omelette',
     ]);
 
     const response = await request(app).get(`/recipes/${created.id}`);
     expect(response.status).toBe(200);
-    expect(response.body.view).toBe("recipe");
-    expect(response.body.locals.recipe.title).toBe("Omelette");
+    expect(response.body.view).toBe('recipe');
+    expect(response.body.locals.recipe.title).toBe('Omelette');
   });
 
-  test("GET /recipes/:id should return 404 for a non-existent recipe", async () => {
-    const response = await request(app).get("/recipes/99999");
+  test('GET /recipes/:id should return 404 for a non-existent recipe', async () => {
+    const response = await request(app).get('/recipes/99999');
     expect(response.status).toBe(404);
   });
 
-  test("POST /recipes should create a new recipe", async () => {
+  test('POST /recipes should create a new recipe', async () => {
     const newRecipe = {
-      title: "New Test Recipe",
-      ingredients: "New test ingredients",
-      method: "New test method",
+      title: 'New Test Recipe',
+      ingredients: 'New test ingredients',
+      method: 'New test method',
     };
 
-    const response = await request(app).post("/recipes").send(newRecipe);
+    const response = await request(app).post('/recipes').send(newRecipe);
 
     expect(response.status).toBe(302); // Redirect status
-    expect(response.headers.location).toBe("/recipes");
+    expect(response.headers.location).toBe('/recipes');
 
     // Verify recipe was created
-    const recipe = await db.get("SELECT * FROM recipes WHERE title = ?", [
+    const recipe = await db.get('SELECT * FROM recipes WHERE title = ?', [
       newRecipe.title,
     ]);
     expect(recipe).toBeDefined();
     expect(recipe.title).toBe(newRecipe.title);
   });
 
-  test("POST /recipes/:id/edit should update an existing recipe", async () => {
+  test('POST /recipes/:id/edit should update an existing recipe', async () => {
     await db.run(
-      "INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)",
-      ["Old Title", "old ingredients", "old method"],
+      'INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)',
+      ['Old Title', 'old ingredients', 'old method'],
     );
-    const created = await db.get("SELECT * FROM recipes WHERE title = ?", [
-      "Old Title",
+    const created = await db.get('SELECT * FROM recipes WHERE title = ?', [
+      'Old Title',
     ]);
 
     const response = await request(app)
       .post(`/recipes/${created.id}/edit`)
       .send({
-        title: "New Title",
-        ingredients: "new ingredients",
-        method: "new method",
+        title: 'New Title',
+        ingredients: 'new ingredients',
+        method: 'new method',
       });
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe(`/recipes/${created.id}`);
 
-    const updated = await db.get("SELECT * FROM recipes WHERE id = ?", [
+    const updated = await db.get('SELECT * FROM recipes WHERE id = ?', [
       created.id,
     ]);
-    expect(updated.title).toBe("New Title");
-    expect(updated.ingredients).toBe("new ingredients");
-    expect(updated.method).toBe("new method");
+    expect(updated.title).toBe('New Title');
+    expect(updated.ingredients).toBe('new ingredients');
+    expect(updated.method).toBe('new method');
   });
 
-  test("DELETE /recipes/:id should delete recipe and GET returns 404", async () => {
+  test('DELETE /recipes/:id should delete recipe and GET returns 404', async () => {
     // Create a recipe to delete
     await db.run(
-      "INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)",
-      ["Recipe to Delete", "ingredients", "method"],
+      'INSERT INTO recipes (title, ingredients, method) VALUES (?, ?, ?)',
+      ['Recipe to Delete', 'ingredients', 'method'],
     );
-    const created = await db.get("SELECT * FROM recipes WHERE title = ?", [
-      "Recipe to Delete",
+    const created = await db.get('SELECT * FROM recipes WHERE title = ?', [
+      'Recipe to Delete',
     ]);
     expect(created).toBeDefined();
 
