@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "github": {
+      "type": "github",
+      "tools": ["list_issues", "search_code", "get_pull_request"]
+    }
+  }
+}
