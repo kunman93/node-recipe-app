@@ -1,17 +1,22 @@
 const sqlite3 = require('sqlite3')
 const { open } = require('sqlite')
 
+let currentDb = null
+
 async function getTestDbConnection() {
-	return open({
-		filename: './test-database.sqlite',
-		driver: sqlite3.Database,
-	})
+	if (!currentDb) {
+		throw new Error('Test database not initialized. Call initializeTestDb() before using getTestDbConnection().')
+	}
+	return currentDb
 }
 
 async function initializeTestDb() {
-	const db = await getTestDbConnection()
-	await createTables(db)
-	return db
+	currentDb = await open({
+		filename: ':memory:',
+		driver: sqlite3.Database,
+	})
+	await createTables(currentDb)
+	return currentDb
 }
 
 async function createTables(db) {
